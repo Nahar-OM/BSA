@@ -19,7 +19,8 @@ RUN apt-get update && apt-get install -y \
     make \
     cmake \
     && apt-get clean
-
+    && which pdfinfo
+    
 RUN pip install --no-cache-dir -r requirements1.txt
 RUN pip install --no-cache-dir -r requirements2.txt
 
