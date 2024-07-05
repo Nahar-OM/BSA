@@ -25,6 +25,9 @@ RUN pip install --no-cache-dir -r requirements2.txt
 
 ENV TF_ENABLE_ONEDNN_OPTS=0
 
+# Add poppler-utils bin directory to PATH
+ENV PATH="/usr/bin:${PATH}"
+
 ENV TESSERACT_PATH="/usr/bin/tesseract"
 
 # Install Bun (A environment to run js/ts backend)
