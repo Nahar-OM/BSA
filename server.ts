@@ -3,7 +3,7 @@ import { serve } from "bun";
 
 function runPythonScript(scriptPath: string, args: string[]) {
   return new Promise((resolve, reject) => {
-    const process = spawn('python', [scriptPath, ...args]);
+    const process = spawn('/usr/local/bin/python', [scriptPath, ...args]);
 
     process.stdout.on('data', (data) => {
       console.log(`Python script output: ${data}`);
@@ -30,7 +30,7 @@ const server = serve({
 
     if (url.pathname === "/run-bsa") {
       try {
-        await runPythonScript('./BSA_main.py', ['Main_BSA_Function', '/path/to/bank_statements', 'ClientCompanyName']);
+        await runPythonScript('./BSA_main.py', ['Main_BSA_Function', './bank-statement/LANDCRAFT-RECREATIONS', 'LANDCRAFT RECREATIONS']);
         return new Response("BSA process completed successfully");
       } catch (error) {
         return new Response(`Error: ${error}`, { status: 500 });
