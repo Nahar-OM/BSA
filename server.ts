@@ -1,11 +1,13 @@
 import { spawn } from 'child_process';
 import { serve } from "bun";
 
-function runPythonScript(scriptPath: string, args: string[]) {
+function runPythonScript(scriptPath: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const process = spawn('/usr/local/bin/python', [scriptPath, ...args]);
+    const process = spawn('/usr/local/bin/python3', [scriptPath]);
+    let output = '';
 
     process.stdout.on('data', (data) => {
+      output += data.toString();
       console.log(`Python script output: ${data}`);
     });
 
@@ -15,7 +17,7 @@ function runPythonScript(scriptPath: string, args: string[]) {
 
     process.on('close', (code) => {
       if (code === 0) {
-        resolve('Python script executed successfully');
+        resolve(output.trim());
       } else {
         reject(`Python script exited with code ${code}`);
       }
@@ -29,12 +31,24 @@ const server = serve({
     const url = new URL(req.url);
 
     if (url.pathname === "/run-bsa") {
-      try {
-        await runPythonScript('./BSA_main.py', ['Main_BSA_Function', './bank-statement/LANDCRAFT-RECREATIONS', 'LANDCRAFT RECREATIONS']);
-        return new Response("BSA process completed successfully");
-      } catch (error) {
-        return new Response(`Error: ${error}`, { status: 500 });
-      }
+      const stream = new ReadableStream({
+        async start(controller) {
+          controller.enqueue("BSA process started. This may take a while...\n");
+
+          try {
+            const result = await runPythonScript('./index.py');
+            controller.enqueue(`BSA process completed. Result: ${result || "BSA process completed successfully"}\n`);
+          } catch (error) {
+            controller.enqueue(`Error: ${error}\n`);
+          }
+
+          controller.close();
+        }
+      });
+
+      return new Response(stream, {
+        headers: { "Content-Type": "text/plain" },
+      });
     }
 
     return new Response("Hello World!");
