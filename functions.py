@@ -5,7 +5,7 @@ import numpy as np
 import cv2
 import pytesseract
 import pandas as pd
-from pdf2image import convert_from_path
+#from pdf2image import convert_from_path
 import datetime
 import time
 import re
@@ -213,28 +213,63 @@ def makeDirectories(pdf_path,root_directory,images_needed):
     return images_folder_path, processed_images_folder_path, excel_folder_path
 
 # Function to convert a pdf to images
-def pdf_to_images(pdf_path,enhancement=True,first_page=None,last_page=None):
-    images = convert_from_path(pdf_path, 500, first_page=first_page, last_page=last_page)
+# def pdf_to_images(pdf_path,enhancement=True,first_page=None,last_page=None):
+#     images = convert_from_path(pdf_path, 500, first_page=first_page, last_page=last_page)
+
+#     final_images = []
+#     for i, image in enumerate(images):
+#         if not enhancement:
+#             grayscaled_image = image.convert('L')
+#             final_images.append(np.array(grayscaled_image))
+#         else :
+#             grayscaled_image = image.convert('L')
+#             _,binary_image = cv2.threshold(np.array(grayscaled_image), 100, 255, cv2.THRESH_BINARY) # type: ignore
+#             denoised_image = cv2.GaussianBlur(binary_image, (3,3), 0) # type: ignore
+#             enhanced_image = Image.fromarray(denoised_image)
+
+#             enhancer = ImageEnhance.Contrast(enhanced_image)
+#             factor = 1.2
+
+#             enhanced_image = enhancer.enhance(factor)
+#             final_images.append(np.array(enhanced_image))
+
+#     return final_images
+def pdf_to_images(pdf_path, enhancement=True, first_page=None, last_page=None):
+    try:
+        pdf_document = fitz.open(pdf_path)
+    except Exception as e:
+        print(f"Error opening PDF document: {e}")
+        return []
 
     final_images = []
-    for i, image in enumerate(images):
-        if not enhancement:
-            grayscaled_image = image.convert('L')
-            final_images.append(np.array(grayscaled_image))
-        else :
-            grayscaled_image = image.convert('L')
-            _,binary_image = cv2.threshold(np.array(grayscaled_image), 100, 255, cv2.THRESH_BINARY) # type: ignore
-            denoised_image = cv2.GaussianBlur(binary_image, (3,3), 0) # type: ignore
+    for page_num in range(len(pdf_document)):
+        if first_page is not None and page_num < first_page:
+            continue
+        if last_page is not None and page_num > last_page:
+            break
+        
+        page = pdf_document.load_page(page_num)
+        pix = page.get_pixmap()
+        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+
+        grayscaled_image = img.convert('L')
+
+        if enhancement:
+            np_image = np.array(grayscaled_image)
+            _, binary_image = cv2.threshold(np_image, 100, 255, cv2.THRESH_BINARY)
+            denoised_image = cv2.GaussianBlur(binary_image, (3, 3), 0)
             enhanced_image = Image.fromarray(denoised_image)
 
             enhancer = ImageEnhance.Contrast(enhanced_image)
             factor = 1.2
-
             enhanced_image = enhancer.enhance(factor)
+
             final_images.append(np.array(enhanced_image))
+        else:
+            final_images.append(np.array(grayscaled_image))
 
+    pdf_document.close()
     return final_images
-
 # Function to save images
 def save_images(images,images_folder_path):
     path_lists = []
