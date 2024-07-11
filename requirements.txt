@@ -5,7 +5,6 @@ typing-extensions
 pandas
 pillow
 pytesseract
-pdf2image
 python-dotenv
 python_dateutil
 python-docx
