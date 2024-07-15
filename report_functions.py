@@ -49,7 +49,8 @@ def ner_model_trainer(info_extracted_df,iterations = 20):
                 example = Example.from_dict(doc, annotations)
                 nlp.update([example], drop=0.5, sgd=optimizer, losses=losses)
     # Need to change acc to the user's path
-    output_dir = r"C:\Users\Lenovo\OneDrive\Desktop\Folders\NaharOm\BSA\Main_Project\ner_model"
+    #output_dir = r"C:\Users\Lenovo\OneDrive\Desktop\Folders\NaharOm\BSA\Main_Project\ner_model"
+    output_dir = os.path.join(os.getcwd(),"ner_model")
     nlp.to_disk(output_dir)
 
 # Function to group the entity names
@@ -231,7 +232,7 @@ def extract_entity_name(transaction):
 
 # Main function to extract the information from the description
 def description_info_extraction(transaction_df,party_name,use_ner_model = False):
-    nlp = spacy.load(r"C:\Users\Lenovo\OneDrive\Desktop\Folders\NaharOm\BSA\Main_Project\ner_model")
+    nlp = spacy.load(os.path.join(os.getcwd(),"ner_model"))
     party_name = party_name.lower()
     # remove pvt ltd from the party name
     party_name = party_name.replace("pvt","")
