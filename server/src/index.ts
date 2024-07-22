@@ -1,17 +1,23 @@
-import { Hono } from 'hono'
-import { cors } from 'hono/cors'
-import { streamSSE } from 'hono/streaming'
-import { spawn } from 'child_process'
-import { serveStatic } from 'hono/bun'
-import { join, basename } from 'path'
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { streamSSE } from 'hono/streaming';
+import { spawn } from 'child_process';
+import { serveStatic } from 'hono/bun';
+import { join, basename } from 'path';
+import { readFile } from 'fs/promises';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { s3Client } from './config/s3-init';
 
-const app = new Hono()
+const app = new Hono();
 
 // Add CORS middleware
-app.use('/*', cors())
+app.use('/*', cors());
 
-app.use('/public/*', serveStatic({ root: './' }))
+// Serve static files
+app.use('/out/*', serveStatic({ root: './' }));
 
+// Function to run the Python script
 function runPythonScript(scriptPath: string, dataFolderName: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const process = spawn('/usr/local/bin/python3', [scriptPath, dataFolderName]);
@@ -38,6 +44,31 @@ function runPythonScript(scriptPath: string, dataFolderName: string): Promise<st
   });
 }
 
+async function uploadFileToS3(filePath: string): Promise<string> {
+  const fileContent = await readFile(filePath);
+  const fileName = `Main_Report_${Date.now()}.xlsx`;
+
+  const command = new PutObjectCommand({
+    Bucket: process.env.AWS_S3_BUCKET_NAME,
+    Key: fileName,
+    Body: fileContent,
+    ContentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+
+  const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+
+  await fetch(signedUrl, {
+    method: 'PUT',
+    body: fileContent,
+    headers: {
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    },
+  });
+
+  return signedUrl;
+}
+
+
 app.get('/run-bsa', async (c) => {
   const dataFolderName = c.req.query('folder');
 
@@ -51,25 +82,30 @@ app.get('/run-bsa', async (c) => {
     try {
       const result = await runPythonScript('../ML/index.py', dataFolderName);
       await stream.writeSSE({ data: `BSA process completed. Result: ${result || "BSA process completed successfully"}` });
+      const filePath = join(process.cwd(), 'report_files', 'Main_Report.xlsx');
+      // const filePath = "../out/report_files\Main_Report.xlsx";
 
-      // Assuming the Python script returns the relative path of the output
-      const outputPath = result.trim();
-      const downloadUrl = `/download/${basename(outputPath)}`;
-      await stream.writeSSE({ data: `Download URL: ${downloadUrl}` });
+      console.log(`Attempting to access file at: ${filePath}`);
+
+      if (!await Bun.file(filePath).exists()) {
+        throw new Error(`File not found: ${filePath}`);
+      }
+
+      const signedUrl = await uploadFileToS3(filePath);
+      await stream.writeSSE({ data: `Download URL: ${signedUrl}` });
     } catch (error) {
       console.error('Error in BSA process:', error);
       await stream.writeSSE({ data: `Error: ${error}` });
     } finally {
-      // Ensure the connection is closed
       await stream.close();
     }
   });
-})
+});
 
 // Route for downloading files
-app.get('/download/:filename', async (c) => {
+app.get('/download/:filename*', async (c) => {
   const filename = c.req.param('filename');
-  const filePath = join(process.cwd(), 'public', 'out', filename);
+  const filePath = join(process.cwd(), 'out', filename!);
 
   const file = Bun.file(filePath);
   const exists = await file.exists();
@@ -81,11 +117,12 @@ app.get('/download/:filename', async (c) => {
   return new Response(file, {
     headers: {
       "Content-Type": file.type,
-      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Disposition": `attachment; filename="${basename(filePath)}"`,
     },
   });
-})
+});
 
-app.get('/', (c) => c.text('Hello World!'))
+// Simple root route
+app.get('/', (c) => c.text('Hello World!'));
 
-export default app
+export default app;

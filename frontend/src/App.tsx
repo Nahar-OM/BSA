@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 const BSAProcessor: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -42,6 +42,8 @@ const BSAProcessor: React.FC = () => {
       eventSource.close();
     };
   };
+
+  console.log(downloadUrl)
 
   return (
     <div className="bsa-processor">
