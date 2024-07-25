@@ -33,8 +33,8 @@ def report_generator(sheet_list,statement_details,party_name,folder_path,use_ner
     # account_type_list = ['Savings Account']
 
     # Save the info_extracted_df to an excel file
-    info_extracted_df.to_excel(folder_path+r"\info_extracted_df.xlsx", index=False)
-
+    #info_extracted_df.to_excel(folder_path+r"\info_extracted_df.xlsx", index=False)
+    info_extracted_df.to_excel(os.path.join(folder_path,"info_extracted_df.xlsx"), index=False)
     # Opening and closing balance
     opening_balance = info_extracted_df['Balance'].iloc[0]
     closing_balance = info_extracted_df['Balance'].iloc[-1]
