@@ -43,7 +43,8 @@ def report_generator(sheet_list,statement_details,party_name,folder_path,use_ner
     total_months = (pd.to_datetime(to_date).year - pd.to_datetime(from_date).year)*12 + (pd.to_datetime(to_date).month - pd.to_datetime(from_date).month) + 1   
     
     # Make a workbook object - Main Report
-    main_report_name = r"\Main_Report.xlsx"
+    #main_report_name = r"\Main_Report.xlsx"
+    main_report_name = "Main_Report.xlsx"
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Landing Page" # type: ignore
@@ -148,7 +149,7 @@ def report_generator(sheet_list,statement_details,party_name,folder_path,use_ner
         adjusted_width = (max_length+5)
         ws.column_dimensions[get_excel_column_name(column-1)].width = adjusted_width
     wb.active = 0
-    wb.save(folder_path+main_report_name)
+    wb.save(os.path.join(folder_path,main_report_name))
 
     statement_details.name = "statement_details"
     save_to_json(folder_path,[statement_details])
@@ -157,7 +158,7 @@ def report_generator(sheet_list,statement_details,party_name,folder_path,use_ner
     graph_generator(info_extracted_df,folder_path,main_report_name)
 
     # name a directory for json files
-    json_dir = folder_path + r"\json_files"
+    json_dir = os.path.join(folder_path,"json_files")
     try:
         os.makedirs(json_dir,exist_ok=True)
     except:
