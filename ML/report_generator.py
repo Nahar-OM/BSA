@@ -23,7 +23,7 @@ def report_generator(sheet_list,statement_details,party_name,folder_path,use_ner
     
     # update statement_details by removing the column File Path
     statement_details = statement_details.drop(columns=['File Path'])
-    statement_details.to_excel(folder_path+r"\statement_details.xlsx", index=False)
+    statement_details.to_excel(os.path.join(folder_path,"statement_details.xlsx"), index=False)
     
     # make dummy values for now
     # from_date = pd.to_datetime('2021-01-01')
