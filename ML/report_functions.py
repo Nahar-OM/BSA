@@ -581,7 +581,7 @@ def overview_generator(transaction_df):
     return result_df
 
 def statement_details_formatter(statement_details,folder_path,main_report_name):
-    main_report_path = folder_path+main_report_name
+    main_report_path = os.path.join(folder_path,main_report_name)
     workbook = load_workbook(main_report_path)
 
     # Create a new worksheet
@@ -623,11 +623,11 @@ def statement_details_formatter(statement_details,folder_path,main_report_name):
         worksheet.column_dimensions[get_excel_column_name(column-1)].width = adjusted_width
 
     workbook.active = 0
-    workbook.save(folder_path+main_report_name)
+    workbook.save(main_report_path)
 
 # Function to format and save the overview sheet
 def overview_sheet_formatter(overview_sheet,folder_path,main_report_name):
-    main_report_path = folder_path+main_report_name
+    main_report_path = os.path.join(folder_path,main_report_name)
     workbook = load_workbook(main_report_path)
     # Create a new worksheet
     worksheet = workbook.create_sheet(title='Overview')
@@ -788,7 +788,7 @@ def overview_sheet_formatter(overview_sheet,folder_path,main_report_name):
         worksheet.column_dimensions[get_excel_column_name(column-1)].width = adjusted_width
 
     workbook.active = 0
-    workbook.save(folder_path+main_report_name)
+    workbook.save(os.path.join(folder_path,main_report_name))
 
 # Function to generate the summary of debits and credits
 def summary_of_debits_and_credits(transaction_df):
@@ -888,7 +888,7 @@ def summary_of_debits_and_credits(transaction_df):
 
 # Function to format and save the summary of debits and credits sheet
 def summary_sheet_formatter(summary_sheet,folder_path,main_report_name):
-    main_report_path = folder_path+main_report_name
+    main_report_path = os.path.join(folder_path,main_report_name)
     workbook = load_workbook(main_report_path)
     worksheet = workbook.create_sheet(title='Summary of Debits and Credits')
     workbook.active = worksheet
@@ -1069,7 +1069,7 @@ def summary_sheet_formatter(summary_sheet,folder_path,main_report_name):
 
     workbook.active = 0
     worksheet.title = 'Summary of Credits and Debits'
-    workbook.save(folder_path+main_report_name)
+    workbook.save(os.path.join(folder_path,main_report_name))
 
 # Function to generate the top credits and debits
 def top_credits_and_debits(transaction_df):
@@ -1218,7 +1218,7 @@ def interest_transactions(transaction_df):
 
 # Function to format and save the top credits and debits sheet
 def top_credit_debit_formatter(top_credits,top_debits,top_credits_debits_monthwise,folder_path,main_report_name):
-    main_report_path = folder_path+main_report_name
+    main_report_path =os.path.join(folder_path,main_report_name)
     workbook = load_workbook(main_report_path)
     worksheet = workbook.create_sheet(title='Top Credits and Debits')
     workbook.active = worksheet
@@ -1508,11 +1508,11 @@ def top_credit_debit_formatter(top_credits,top_debits,top_credits_debits_monthwi
 
     worksheet.sheet_view.showGridLines = False
     workbook.active = 0
-    workbook.save(folder_path+main_report_name)
+    workbook.save(os.path.join(folder_path,main_report_name))
 
 # Function to format and save the loan transactions sheet
 def loan_transactions_formatter(loan_transction_df,folder_path,main_report_name):
-    main_report_path = folder_path+main_report_name
+    main_report_path = os.path.join(folder_path,main_report_name)
     workbook = load_workbook(main_report_path)
     worksheet = workbook.create_sheet(title='Loan Transactions')
     workbook.active = worksheet
@@ -1632,11 +1632,11 @@ def loan_transactions_formatter(loan_transction_df,folder_path,main_report_name)
 
     worksheet.sheet_view.showGridLines = False
     workbook.active = 0
-    workbook.save(folder_path+main_report_name)
+    workbook.save(os.path.join(folder_path,main_report_name))
 
 # Function to format and save the interest transactions sheet
 def interest_transactions_formatter(interest_transction_df,folder_path,main_report_name):
-    main_report_path = folder_path+main_report_name
+    main_report_path = os.path.join(folder_path,main_report_name)
     workbook = load_workbook(main_report_path)
     worksheet = workbook.create_sheet(title='Interest Transactions')
     workbook.active = worksheet
@@ -1756,7 +1756,7 @@ def interest_transactions_formatter(interest_transction_df,folder_path,main_repo
 
     worksheet.sheet_view.showGridLines = False
     workbook.active = 0
-    workbook.save(folder_path+main_report_name)
+    workbook.save(os.path.join(folder_path,main_report_name))
 
 # Function to generate the exceptional transactions
 def exceptional_transaction(transaction_df):
@@ -1776,7 +1776,7 @@ def exceptional_transaction(transaction_df):
 
 # Function to format and save the exceptional transactions sheet
 def exceptional_transaction_formatter(high_transactions,rtgs_transactions,sunday_transactions,folder_path,main_report_name):
-    main_report_path = folder_path+main_report_name
+    main_report_path = os.path.join(folder_path,main_report_name)
     workbook = load_workbook(main_report_path)
     worksheet = workbook.create_sheet(title='Exceptional Transactions')
     workbook.active = worksheet
@@ -1941,7 +1941,7 @@ def exceptional_transaction_formatter(high_transactions,rtgs_transactions,sunday
     worksheet.sheet_view.showGridLines = False
     workbook.active = 0
     # Save the file
-    workbook.save(folder_path +main_report_name)
+    workbook.save(os.path.join(folder_path,main_report_name))
 
 # Function to generate the inhouse transactions
 def inhouse_transactions(transaction_df):
@@ -1958,7 +1958,7 @@ def inhouse_transactions(transaction_df):
 
 # Function to format and save the inhouse transactions sheet
 def inhouse_transactions_formatter(inhouse_transactions,inhouse_transactions_grouped,folder_path,main_report_name):
-    main_report_path = folder_path+main_report_name
+    main_report_path = os.path.join(folder_path,main_report_name)
     workbook = load_workbook(main_report_path)
     worksheet = workbook.create_sheet(title='Inhouse Transactions')
     workbook.active = worksheet
@@ -2167,7 +2167,7 @@ def inhouse_transactions_formatter(inhouse_transactions,inhouse_transactions_gro
     worksheet.sheet_view.showGridLines = False
 
     workbook.active = 0
-    workbook.save(folder_path + main_report_name)
+    workbook.save(os.path.join(folder_path,main_report_name))
 
 # Function to generate the salary transactions
 def salary_transactions(transaction_df):
@@ -2182,7 +2182,7 @@ def salary_transactions(transaction_df):
 
 # Function to format and save the salary transactions sheet
 def salary_transactions_formatter(salary_transactions,salary_transactions_grouped,folder_path,main_report_name):
-    main_report_path = folder_path+main_report_name
+    main_report_path = os.path.join(folder_path,main_report_name)
     workbook = load_workbook(main_report_path)
     worksheet = workbook.create_sheet(title='Salary Transactions')
     workbook.active = worksheet
@@ -2301,7 +2301,7 @@ def salary_transactions_formatter(salary_transactions,salary_transactions_groupe
     worksheet.sheet_view.showGridLines = False
 
     workbook.active = 0
-    workbook.save(folder_path + main_report_name)
+    workbook.save(os.path.join(folder_path,main_report_name))
 
 # Function to generate the supplier transactions
 def supplier_transactions(transaction_df):
@@ -2316,7 +2316,7 @@ def supplier_transactions(transaction_df):
 
 # Function to format and save the supplier transactions sheet
 def supplier_transactions_formatter(supplier_transactions,supplier_transactions_grouped,folder_path,main_report_name):
-    main_report_path = folder_path+main_report_name
+    main_report_path = os.path.join(folder_path,main_report_name)
     workbook = load_workbook(main_report_path)
     worksheet = workbook.create_sheet(title='Supplier Transactions')
     workbook.active = worksheet
@@ -2432,7 +2432,7 @@ def supplier_transactions_formatter(supplier_transactions,supplier_transactions_
     worksheet.sheet_view.showGridLines = False
 
     workbook.active = 0
-    workbook.save(folder_path + main_report_name)
+    workbook.save(os.path.join(folder_path,main_report_name))
 
 # Function to generate the customer transactions
 def customer_transactions(transaction_df):
@@ -2447,7 +2447,7 @@ def customer_transactions(transaction_df):
 
 # Function to format and save the customer transactions sheet
 def customer_transactions_formatter(customer_transactions,customer_transactions_grouped,folder_path,main_report_name):
-    main_report_path = folder_path+main_report_name
+    main_report_path = os.path.join(folder_path,main_report_name)
     workbook = load_workbook(main_report_path)
     worksheet = workbook.create_sheet(title='Customer Transactions')
     workbook.active = worksheet
@@ -2562,7 +2562,7 @@ def customer_transactions_formatter(customer_transactions,customer_transactions_
     worksheet.sheet_view.showGridLines = False
 
     workbook.active = 0
-    workbook.save(folder_path + main_report_name)
+    workbook.save(os.path.join(folder_path,main_report_name))
 
 # Function to generate the charges transactions
 def charges_transactions(transaction_df):
@@ -2577,7 +2577,7 @@ def charges_transactions(transaction_df):
 
 # Function to format and save the charges transactions sheet
 def charges_transactions_formatter(charges_transactions,charges_transactions_grouped,folder_path,main_report_name):
-    main_report_path = folder_path+main_report_name
+    main_report_path = os.path.join(folder_path,main_report_name)
     workbook = load_workbook(main_report_path)
     worksheet = workbook.create_sheet(title='Charges Transactions')
     workbook.active = worksheet
@@ -2693,7 +2693,7 @@ def charges_transactions_formatter(charges_transactions,charges_transactions_gro
     worksheet.sheet_view.showGridLines = False
 
     workbook.active = 0
-    workbook.save(folder_path + main_report_name)
+    workbook.save(os.path.join(folder_path,main_report_name))
 
 # Function to generate the return transactions
 def transaction_return(transaction_df):
@@ -2724,7 +2724,7 @@ def transaction_return(transaction_df):
 
 # Function to format and save the return transactions sheet
 def return_transactions_formatter(inhouse_transactions,inhouse_transactions_grouped,folder_path,main_report_name):
-    main_report_path = folder_path+main_report_name
+    main_report_path = os.path.join(folder_path,main_report_name)
     workbook = load_workbook(main_report_path)
     worksheet = workbook.create_sheet(title='Return Transactions')
     workbook.active = worksheet
@@ -2933,7 +2933,7 @@ def return_transactions_formatter(inhouse_transactions,inhouse_transactions_grou
     worksheet.sheet_view.showGridLines = False
 
     workbook.active = 0
-    workbook.save(folder_path + main_report_name)
+    workbook.save(os.path.join(folder_path,main_report_name))
 
 # Function to generate, format and save the graphs in the main report
 def graph_generator(info_extracted_df,folder_path,main_report_name):
@@ -2968,7 +2968,7 @@ def graph_generator(info_extracted_df,folder_path,main_report_name):
     salary_table = salary_table[['Month Year','Debit']]
 
     # Create a workbook
-    main_report_path = folder_path+main_report_name
+    main_report_path = os.path.join(folder_path,main_report_name)
     workbook = load_workbook(main_report_path)
     worksheet = workbook.create_sheet(title='All Graphs')
     workbook.active = worksheet
@@ -3161,7 +3161,7 @@ def graph_generator(info_extracted_df,folder_path,main_report_name):
     worksheet.sheet_view.showGridLines = False
     # Worksheet Names
     workbook.active = 0
-    workbook.save(folder_path + main_report_name)
+    workbook.save(os.path.join(folder_path,main_report_name))
 
 # Function to save the dataframes to json files
 def save_to_json(folder_path,dataframes):
@@ -3171,7 +3171,7 @@ def save_to_json(folder_path,dataframes):
         # store the json name as the variable name of the dataframe
         json_name = dataframe.name
         # Save the dataframe to json
-        dataframe.to_json(folder_path +f"\{json_name}"+'.json',orient='records')
+        dataframe.to_json(os.path.join(folder_path,f"{json_name}.json"),orient='records')
 
     return
 
