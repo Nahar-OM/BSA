@@ -4,20 +4,35 @@ import { streamSSE } from 'hono/streaming';
 import { spawn } from 'child_process';
 import { serveStatic } from 'hono/bun';
 import { join, basename } from 'path';
-import { readFile } from 'fs/promises';
+import { readFile, readdir, unlink, rmdir, stat } from 'fs/promises';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { s3Client } from './config/s3-init';
 
 const app = new Hono();
 
-// Add CORS middleware
 app.use('/*', cors());
 
-// Serve static files
 app.use('/out/*', serveStatic({ root: './' }));
 
-// Function to run the Python script
+async function deleteOutFolderContents(dir: string) {
+  const files = await readdir(dir);
+
+  for (const file of files) {
+    const filePath = join(dir, file);
+    const fileStat = await stat(filePath);
+
+    if (fileStat.isDirectory()) {
+      await deleteOutFolderContents(filePath);
+      await rmdir(filePath);
+    } else {
+      await unlink(filePath);
+    }
+  }
+
+  console.log('Contents of "out" folder deleted.');
+}
+
 function runPythonScript(scriptPath: string, dataFolderName: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const process = spawn('/usr/local/bin/python3', [scriptPath, dataFolderName]);
@@ -46,7 +61,7 @@ function runPythonScript(scriptPath: string, dataFolderName: string): Promise<st
 
 async function uploadFileToS3(filePath: string): Promise<string> {
   const fileContent = await readFile(filePath);
-  const fileName = `Main_Report_${Date.now()}.xlsx`;
+  const fileName = `${crypto.randomUUID()}_Report.xlsx`;
 
   const command = new PutObjectCommand({
     Bucket: process.env.AWS_S3_BUCKET_NAME,
@@ -65,7 +80,8 @@ async function uploadFileToS3(filePath: string): Promise<string> {
     },
   });
 
-  return signedUrl;
+  const reportUrl = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/${fileName}`;
+  return reportUrl;
 }
 
 
@@ -82,8 +98,8 @@ app.get('/run-bsa', async (c) => {
     try {
       const result = await runPythonScript('../ML/index.py', dataFolderName);
       await stream.writeSSE({ data: `BSA process completed. Result: ${result || "BSA process completed successfully"}` });
-      const filePath = join(process.cwd(), 'report_files', 'Main_Report.xlsx');
-      // const filePath = "../out/report_files\Main_Report.xlsx";
+
+      const filePath = join(process.cwd(), 'out', 'report_files', 'Main_Report.xlsx');
 
       console.log(`Attempting to access file at: ${filePath}`);
 
@@ -93,6 +109,7 @@ app.get('/run-bsa', async (c) => {
 
       const signedUrl = await uploadFileToS3(filePath);
       await stream.writeSSE({ data: `Download URL: ${signedUrl}` });
+      await deleteOutFolderContents(join(process.cwd(), 'out'));
     } catch (error) {
       console.error('Error in BSA process:', error);
       await stream.writeSSE({ data: `Error: ${error}` });
